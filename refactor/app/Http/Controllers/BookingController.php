@@ -2,6 +2,7 @@
 
 namespace DTApi\Http\Controllers;
 
+use App\Http\Resources\JobResource;
 use DTApi\Models\Job;
 use DTApi\Http\Requests;
 use DTApi\Models\Distance;
@@ -35,17 +36,35 @@ class BookingController extends Controller
      */
     public function index(Request $request)
     {
-        if($user_id = $request->get('user_id')) {
+        $jobs = [];
+        /*
+         * IMP::  we can remove the code here as we must be using it multiple of places .
+         * Considering that __authenticatedUser is instance of User
+        **/
 
-            $response = $this->repository->getUsersJobs($user_id);
+//        if($user_id = $request->get('user_id')) {
+//
+//            $response = $this->repository->getUsersJobs($user_id);
+//
+//        }
+//        elseif($request->__authenticatedUser->user_type == env('ADMIN_ROLE_ID') || $request->__authenticatedUser->user_type == env('SUPERADMIN_ROLE_ID'))
+//        {
+//            $response = $this->repository->getAll($request);
+//        }
 
+        if ($request->__authenticatedUser->isAdminOrSuperAdmin()) {
+
+            $jobs = $this->repository->getAll($request);
         }
-        elseif($request->__authenticatedUser->user_type == env('ADMIN_ROLE_ID') || $request->__authenticatedUser->user_type == env('SUPERADMIN_ROLE_ID'))
-        {
-            $response = $this->repository->getAll($request);
+        else if ($request->__authenticatedUser->isUser()) {
+
+            $jobs = $this->repository->getUsersJobs($request->input('user_id'));
         }
 
-        return response($response);
+        /* instead of helper function we can use a marco to keep the response consistency  **/
+        return  response()->api($jobs);
+
+//        return response($jobs);
     }
 
     /**
@@ -55,18 +74,23 @@ class BookingController extends Controller
     public function show($id)
     {
         $job = $this->repository->with('translatorJobRel.user')->find($id);
-
-        return response($job);
+        return  response()->api(new JobResource($job));
     }
 
     /**
      * @param Request $request
      * @return mixed
      */
-    public function store(Request $request)
-    {
-        $data = $request->all();
+    /* Instead of Request use pre validated request */
 
+    public function store(StoreJobRequest $request)
+    {
+        /** pleas enote that the blow will check and return the response as json
+         *using the custom api marco i created to throw here from here onwards no validation is needed
+         */
+        $data = $request->validated();
+
+        /**  uncessary pass of $request->__authenticatedUser  $request is automatically availlable inside the repo  */
         $response = $this->repository->store($request->__authenticatedUser, $data);
 
         return response($response);
@@ -222,7 +246,7 @@ class BookingController extends Controller
         } else {
             $flagged = 'no';
         }
-        
+
         if ($data['manually_handled'] == 'true') {
             $manually_handled = 'yes';
         } else {
@@ -267,6 +291,7 @@ class BookingController extends Controller
         $data = $request->all();
         $job = $this->repository->find($data['jobid']);
         $job_data = $this->repository->jobToData($job);
+
         $this->repository->sendNotificationTranslator($job, $job_data, '*');
 
         return response(['success' => 'Push sent']);
