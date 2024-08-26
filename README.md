@@ -1,5 +1,4 @@
 # CodeTest_2022_v6
- code test 
 
 
 * I have created a jobResouce which is json resource but not used it in all the methods ideally it will 
@@ -32,7 +31,7 @@ query /response etc.
 * instead of service then we can create a sperate libarary and import in our project to send notifications
 * all the classes are registered in app service provider
 
-* *** IMP ***
+# *** IMP ***
 * i have not created a working example of the code but a reflection of how the code can be refactored and simplified 
 
 * using tools like laravel debug bar or telescope we can optimize the query proformance also 
@@ -45,5 +44,5 @@ query /response etc.
 
 * code can be modified it better if its has routes &  model folder also. 
 
-* i checked namespace of the project is changed please dont mind if i used APP namespace somehwere instead of DTApi
-
+* i checked namespace of the project is changed please dont mind if i used APP namespace somewhere instead of DTApi
+* Added switch for example  too many if else's can be removed more if else's requires more processing power more memory consumption

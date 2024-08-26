@@ -42,7 +42,7 @@ class SMSNotification
 
     }
 
-    private function convertToHoursMins($duration)
+    private function convertToHoursMins($time )
     {
         if ($time < 60) {
             return $time . 'min';
